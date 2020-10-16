@@ -1,5 +1,6 @@
-using Newtonsoft.Json.Linq;
+using Microsoft.ReactNative.Managed;
 using System;
+using System.Diagnostics;
 
 namespace TrackPlayer.Logic
 {
@@ -15,33 +16,32 @@ namespace TrackPlayer.Logic
         public string Album { get; set; }
         public Uri Artwork { get; set; }
 
-        private JObject _originalObj;
+        private JSValueObject _originalObj;
 
-        public Track(JObject data)
+        public Track(JSValueObject data)
         {
-            Id = (string)data.GetValue("id");
+            Id = data["id"].AsString();
             Url = Utils.GetUri(data, "url", null);
-            Type = Utils.GetValue<string>(data, "type", TrackType.Default);
+            Type = data["type"].AsString();
 
             SetMetadata(data);
 
             _originalObj = data;
         }
 
-        public void SetMetadata(JObject data)
+        public void SetMetadata(JSValueObject data)
         {
-            Duration = Utils.GetValue<double>(data, "duration", 0);
+            Duration = data["duration"].AsDouble();
 
-            Title = Utils.GetValue<string>(data, "title", null);
-            Artist = Utils.GetValue<string>(data, "artist", null);
-            Album = Utils.GetValue<string>(data, "album", null);
-            Artwork = Utils.GetUri(data, "artwork", null);
+            Title = data["title"].AsString();
+            Artist = data["artist"].AsString();
+            Album = data["album"].AsString();
+            Artwork = new Uri(data["artwork"].AsString());
 
-            if (_originalObj != null && _originalObj != data)
-                _originalObj.Merge(data);
+            Debug.WriteLine("Track.cs - implement merge of orig object");
         }
 
-        public JObject ToObject()
+        public JSValueObject ToObject()
         {
             return _originalObj;
         }

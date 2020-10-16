@@ -1,6 +1,6 @@
-using Newtonsoft.Json.Linq;
-using ReactNative.Bridge;
-using ReactNative.Modules.Core;
+using Microsoft.ReactNative.Managed;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using TrackPlayer.Players;
 
@@ -22,7 +22,8 @@ namespace TrackPlayer.Logic
 
         public void SendEvent(string eventName, object data)
         {
-            context.GetJavaScriptModule<RCTDeviceEventEmitter>().emit(eventName, data);
+            //context.GetJavaScriptModule<RCTDeviceEventEmitter>().emit(eventName, data);
+            throw new System.Exception("SendEvent not implemented yet");
         }
 
         public void SwitchPlayback(Playback pb)
@@ -37,12 +38,12 @@ namespace TrackPlayer.Logic
             metadata.SetTransportControls(pb?.GetTransportControls());
         }
 
-        public LocalPlayback CreateLocalPlayback(JObject options)
+        public LocalPlayback CreateLocalPlayback(JSValueObject options)
         {
             return new LocalPlayback(this, options);
         }
 
-        public void UpdateOptions(JObject options)
+        public void UpdateOptions(JSValue options)
         {
             metadata.UpdateOptions(options);
         }
@@ -60,20 +61,22 @@ namespace TrackPlayer.Logic
         public void OnEnd(Track previous, double prevPos)
         {
             Debug.WriteLine("OnEnd");
-
-            JObject obj = new JObject();
-            obj.Add("track", previous?.Id);
-            obj.Add("position", prevPos);
-            SendEvent(Events.PlaybackQueueEnded, obj);
+            //Dictionary dict<string,JSValue>  = new Dictionary<string, JSValue>();
+            //dict.Add
+            var a = new Dictionary<string, JSValue>();
+            a.Add("track", previous?.Id);
+            a.Add("position", prevPos);
+            ReadOnlyDictionary<string, JSValue> d = new ReadOnlyDictionary<string, JSValue>(a);
+            SendEvent(Events.PlaybackQueueEnded, new JSValueObject(d));
         }
 
         public void OnStateChange(PlaybackState state)
         {
             Debug.WriteLine("OnStateChange");
-
-            JObject obj = new JObject();
+            var obj = new Dictionary<string, JSValue>();
             obj.Add("state", (int) state);
-            SendEvent(Events.PlaybackState, obj);
+            JSValueObject jso = new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj));
+            SendEvent(Events.PlaybackState, jso);
         }
 
         public void OnTrackUpdate(Track previous, double prevPos, Track next, bool changed)
@@ -84,11 +87,12 @@ namespace TrackPlayer.Logic
 
             if(changed)
             {
-                JObject obj = new JObject();
+                Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
                 obj.Add("track", previous?.Id);
                 obj.Add("position", prevPos);
                 obj.Add("nextTrack", next?.Id);
-                SendEvent(Events.PlaybackTrackChanged, obj);
+                SendEvent(Events.PlaybackTrackChanged, new JSValueObject(new ReadOnlyDictionary<string, JSValue>(obj)));
+                    
             }
         }
 
@@ -96,10 +100,10 @@ namespace TrackPlayer.Logic
         {
             Debug.WriteLine("OnError: " + error);
 
-            JObject obj = new JObject();
+            Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
             obj.Add("code", code);
             obj.Add("message", error);
-            SendEvent(Events.PlaybackError, obj);
+            SendEvent(Events.PlaybackError, new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj)));
         }
 
         public void Dispose()

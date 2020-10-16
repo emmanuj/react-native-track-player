@@ -1,4 +1,6 @@
-using Newtonsoft.Json.Linq;
+using Microsoft.ReactNative.Managed;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Windows.Media;
 using Windows.Storage.Streams;
@@ -55,18 +57,18 @@ namespace TrackPlayer.Logic
             controls.IsRecordEnabled = false;
         }
 
-        public void UpdateOptions(JObject data)
+        public void UpdateOptions(JSValue data)
         {
             Debug.WriteLine("Updating options...");
 
-            if (data.TryGetValue("jumpInterval", out var ji))
+            if (data["jumpInterval"].TryGetDouble(out double ji))
             {
-                jumpInterval = (double)ji;
+                jumpInterval = ji;
             }
 
-            if (data.TryGetValue("capabilities", out var caps))
+            if (data["capabilities"].TryGetObject(out var caps))
             {
-                JArray capabilities = (JArray) caps;
+                var capabilities = (JSValueArray) caps;
 
                 play = Utils.ContainsInt(capabilities, (int) Capability.Play);
                 pause = Utils.ContainsInt(capabilities, (int) Capability.Pause);
@@ -107,15 +109,15 @@ namespace TrackPlayer.Logic
         {
             if (!seek) return;
 
-            JObject obj = new JObject();
+            Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
             obj.Add("position", args.RequestedPlaybackPosition.TotalSeconds);
-            manager.SendEvent(Events.ButtonSeekTo, obj);
+            manager.SendEvent(Events.ButtonSeekTo, new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj)));
         }
 
         private void OnButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
         {
             string eventType = null;
-            JObject data = null;
+            JSValueObject data = null;
 
             switch(args.Button)
             {
@@ -136,13 +138,16 @@ namespace TrackPlayer.Logic
                     break;
                 case SystemMediaTransportControlsButton.FastForward:
                     eventType = Events.ButtonJumpForward;
-                    data = new JObject();
-                    data["interval"] = jumpInterval;
+                    var dictionary = new Dictionary<string, JSValue>();
+                    dictionary["interval"] = jumpInterval;
+                    data = new JSValueObject(new JSValueObject(new ReadOnlyDictionary<string,JSValue>(dictionary)));
+
                     break;
                 case SystemMediaTransportControlsButton.Rewind:
                     eventType = Events.ButtonJumpBackward;
-                    data = new JObject();
-                    data["interval"] = jumpInterval;
+                    var dict = new Dictionary<string, JSValue>();
+                    dict["interval"] = jumpInterval;
+                    data = new JSValueObject(new ReadOnlyDictionary<string,JSValue>(dict));
                     break;
                 default:
                     return;
