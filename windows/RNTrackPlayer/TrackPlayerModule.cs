@@ -50,9 +50,9 @@ namespace TrackPlayer
 
         private MediaManager manager;
 
-        public TrackPlayerModule(ReactContext reactContext)
+        public TrackPlayerModule()
         {
-            manager = new MediaManager(reactContext);
+            manager = new MediaManager();
         }
 
 
@@ -164,7 +164,8 @@ namespace TrackPlayer
 
             foreach (JSValue obj in array)
             {
-                tracks.Add(new Track(new JSValueObject(obj.AsObject())));
+                throw new System.Exception("TODO: Implement TrackPlayerModule.add");
+                //tracks.Add(new Track(new JSValueObject(obj.AsObject())));
             }
 
             player.Add(tracks, insertBeforeId, promise);

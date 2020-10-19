@@ -109,9 +109,8 @@ namespace TrackPlayer.Logic
         {
             if (!seek) return;
 
-            Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
-            obj.Add("position", args.RequestedPlaybackPosition.TotalSeconds);
-            manager.SendEvent(Events.ButtonSeekTo, new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj)));
+            var jv = new JSValueObject {{ "position", args.RequestedPlaybackPosition.TotalSeconds }};
+            manager.SendEvent(Events.ButtonSeekTo, jv);
         }
 
         private void OnButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
@@ -119,7 +118,7 @@ namespace TrackPlayer.Logic
             string eventType = null;
             JSValueObject data = null;
 
-            switch(args.Button)
+            switch (args.Button)
             {
                 case SystemMediaTransportControlsButton.Play:
                     eventType = Events.ButtonPlay;
@@ -138,16 +137,12 @@ namespace TrackPlayer.Logic
                     break;
                 case SystemMediaTransportControlsButton.FastForward:
                     eventType = Events.ButtonJumpForward;
-                    var dictionary = new Dictionary<string, JSValue>();
-                    dictionary["interval"] = jumpInterval;
-                    data = new JSValueObject(new JSValueObject(new ReadOnlyDictionary<string,JSValue>(dictionary)));
+                    data = new JSValueObject {{ "interval", jumpInterval }};
 
                     break;
                 case SystemMediaTransportControlsButton.Rewind:
                     eventType = Events.ButtonJumpBackward;
-                    var dict = new Dictionary<string, JSValue>();
-                    dict["interval"] = jumpInterval;
-                    data = new JSValueObject(new ReadOnlyDictionary<string,JSValue>(dict));
+                    data = new JSValueObject { { "interval", jumpInterval } };
                     break;
                 default:
                     return;

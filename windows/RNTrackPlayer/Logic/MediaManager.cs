@@ -10,13 +10,13 @@ namespace TrackPlayer.Logic
     {
         private ReactContext context;
         private Metadata metadata;
-        
+
         private Playback player;
 
-        public MediaManager(ReactContext context)
+        public MediaManager()
         {
-            this.context = context;
-            
+            //this.context = context;
+
             this.metadata = new Metadata(this);
         }
 
@@ -60,22 +60,14 @@ namespace TrackPlayer.Logic
 
         public void OnEnd(Track previous, double prevPos)
         {
-            Debug.WriteLine("OnEnd");
-            //Dictionary dict<string,JSValue>  = new Dictionary<string, JSValue>();
-            //dict.Add
-            var a = new Dictionary<string, JSValue>();
-            a.Add("track", previous?.Id);
-            a.Add("position", prevPos);
-            ReadOnlyDictionary<string, JSValue> d = new ReadOnlyDictionary<string, JSValue>(a);
-            SendEvent(Events.PlaybackQueueEnded, new JSValueObject(d));
+            SendEvent(Events.PlaybackQueueEnded, new JSValueObject{ { "track", previous?.Id },
+                {"position", prevPos } });
         }
 
         public void OnStateChange(PlaybackState state)
         {
             Debug.WriteLine("OnStateChange");
-            var obj = new Dictionary<string, JSValue>();
-            obj.Add("state", (int) state);
-            JSValueObject jso = new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj));
+            JSValueObject jso = new JSValueObject { { "state", (int)state } };
             SendEvent(Events.PlaybackState, jso);
         }
 
@@ -85,14 +77,13 @@ namespace TrackPlayer.Logic
 
             metadata.UpdateMetadata(next);
 
-            if(changed)
+            if (changed)
             {
-                Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
-                obj.Add("track", previous?.Id);
-                obj.Add("position", prevPos);
-                obj.Add("nextTrack", next?.Id);
-                SendEvent(Events.PlaybackTrackChanged, new JSValueObject(new ReadOnlyDictionary<string, JSValue>(obj)));
-                    
+                var jvo = new JSValueObject{{"track", previous?.Id},
+                    { "position", prevPos },
+                { "nextTrack", next?.Id} };
+                SendEvent(Events.PlaybackTrackChanged, jvo);
+
             }
         }
 
@@ -100,15 +91,14 @@ namespace TrackPlayer.Logic
         {
             Debug.WriteLine("OnError: " + error);
 
-            Dictionary<string, JSValue> obj = new Dictionary<string, JSValue>();
-            obj.Add("code", code);
-            obj.Add("message", error);
-            SendEvent(Events.PlaybackError, new JSValueObject(new ReadOnlyDictionary<string,JSValue>(obj)));
+            JSValueObject jvo = new JSValueObject{{"code", code },
+                { "message", error } };
+            SendEvent(Events.PlaybackError, jvo);
         }
 
         public void Dispose()
         {
-            if(player != null)
+            if (player != null)
             {
                 player.Dispose();
                 player = null;
