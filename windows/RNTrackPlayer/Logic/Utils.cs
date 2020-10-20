@@ -24,9 +24,9 @@ namespace TrackPlayer.Logic
 
         public static Uri GetUri(JSValueObject obj, string key, Uri def)
         {
-            var val = obj[key];
             try
             {
+                var val = obj[key];
                 if (val.TryGetString(out string s))
                 {
                     return new Uri(s);
