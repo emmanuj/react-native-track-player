@@ -7,7 +7,12 @@ namespace TrackPlayer.Logic
     internal static class Utils
     {
 
-        public static bool IsPlaying(PlaybackState state)
+    public static T GetValue<T>(JSValueObject obj, string key, T def)
+    {
+       return obj.TryGetValue(key, out var val) ? val.To<T>() : def;
+    }
+
+    public static bool IsPlaying(PlaybackState state)
         {
             return state == PlaybackState.Playing || state == PlaybackState.Buffering;
         }

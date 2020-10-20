@@ -20,9 +20,9 @@ namespace TrackPlayer.Logic
 
         public Track(JSValueObject data)
         {
-            Id = data["id"].AsString();
+            Id = Utils.GetValue<string>(data, "id", null);
             Url = Utils.GetUri(data, "url", null);
-            Type = data["type"].AsString();
+            Type = Utils.GetValue<string>(data, "type", TrackType.Default);
 
             SetMetadata(data);
 
@@ -31,13 +31,10 @@ namespace TrackPlayer.Logic
 
         public void SetMetadata(JSValueObject data)
         {
-            Duration = data["duration"].AsDouble();
-
-            Title = data["title"].AsString();
-            Artist = data["artist"].AsString();
-            Album = data["album"].AsString();
-            Artwork = new Uri(data["artwork"].AsString());
-
+            Title = Utils.GetValue<string>(data, "title", null);
+            Artist = Utils.GetValue<string>(data, "artist", null);
+            Album = Utils.GetValue<string>(data, "album", null);
+            Artwork = Utils.GetUri(data, "artwork", null);
             Debug.WriteLine("Track.cs - implement merge of orig object");
         }
 

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.ReactNative.Managed;
 using System.Collections.Generic;
 using TrackPlayer.Logic;
@@ -57,16 +58,18 @@ namespace TrackPlayer
 
 
         [ReactMethod]
-        public void setupPlayer(JSValueObject options, ReactPromise<JSValue> promise)
+        public void setupPlayer(JSValue options, ReactPromise<JSValue> promise)
         {
+            JSValueObject x = JSValueObject.CopyFrom(options.AsObject());
+                //options.AsObject();
             if (manager.GetPlayer() != null)
             {
-                promise.Resolve(JSValue.Null);
+                promise.Resolve(true);
                 return;
             }
 
-            manager.SwitchPlayback(manager.CreateLocalPlayback(options));
-            promise.Resolve(JSValue.Null);
+            manager.SwitchPlayback(manager.CreateLocalPlayback(x));
+            promise.Resolve(true);
         }
 
         [ReactMethod]
@@ -76,9 +79,11 @@ namespace TrackPlayer
         }
 
         [ReactMethod]
-        public void updateOptions(JSValueObject options, ReactPromise<JSValue> promise)
+        public void updateOptions(JSValue options, ReactPromise<JSValue> promise)
         {
-            manager.UpdateOptions(options);
+
+            JSValueObject x = JSValueObject.CopyFrom(options.AsObject());
+            manager.UpdateOptions(x);
             promise.Resolve(JSValue.Null);
         }
 
@@ -123,8 +128,9 @@ namespace TrackPlayer
         }
 
         [ReactMethod]
-        public void updateMetadataForTrack(string id, JSValueObject metadata, ReactPromise<JSValue> promise)
+        public void updateMetadataForTrack(string id, JSValue imetadata, ReactPromise<JSValue> promise)
         {
+            JSValueObject metadata = JSValueObject.CopyFrom(imetadata.AsObject());
             var player = manager?.GetPlayer();
             if (Utils.CheckPlayback(player, promise)) return;
 
@@ -153,24 +159,30 @@ namespace TrackPlayer
             player.RemoveUpcomingTracks();
             promise.Resolve(JSValue.Null);
         }
-
+        
         [ReactMethod]
-        public void add(JSValueArray array, string insertBeforeId, ReactPromise<JSValue> promise)
+        public void add(JSValue iarray, string insertBeforeId, ReactPromise<JSValue> promise)
         {
-            var player = manager?.GetPlayer();
-            if (Utils.CheckPlayback(player, promise)) return;
+            try {
+                JSValueArray array = JSValueArray.CopyFrom(iarray.AsArray());
+                var player = manager?.GetPlayer();
+                if (Utils.CheckPlayback(player, promise)) return;
 
-            List<Track> tracks = new List<Track>(array.Count);
+                List<Track> tracks = new List<Track>(array.Count);
 
-            foreach (JSValue obj in array)
-            {
-                throw new System.Exception("TODO: Implement TrackPlayerModule.add");
-                //tracks.Add(new Track(new JSValueObject(obj.AsObject())));
+                foreach (JSValue obj in array)
+                {
+                    tracks.Add(new Track(JSValueObject.CopyFrom(obj.AsObject())));
+                }
+
+                player.Add(tracks, insertBeforeId, promise);
+                promise.Resolve(true);
+                }
+            catch(Exception e) {
+                promise.Reject(new ReactError{Exception = e});
             }
-
-            player.Add(tracks, insertBeforeId, promise);
         }
-
+        
         [ReactMethod]
         public void remove(JSValueArray array, ReactPromise<JSValue> promise)
         {
