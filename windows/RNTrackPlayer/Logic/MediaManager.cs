@@ -8,22 +8,16 @@ namespace TrackPlayer.Logic
 {
     public class MediaManager
     {
-        private ReactContext context;
+        private TrackPlayerModule module;
+
         private Metadata metadata;
 
         private Playback player;
 
-        public MediaManager()
+        public MediaManager(TrackPlayerModule module)
         {
-            //this.context = context;
-
-            this.metadata = new Metadata(this);
-        }
-
-        public void SendEvent(string eventName, object data)
-        {
-            //context.GetJavaScriptModule<RCTDeviceEventEmitter>().emit(eventName, data);
-            throw new System.Exception("SendEvent not implemented yet");
+            this.module = module;
+            this.metadata = new Metadata(this, module);
         }
 
         public void SwitchPlayback(Playback pb)
@@ -60,40 +54,33 @@ namespace TrackPlayer.Logic
 
         public void OnEnd(Track previous, double prevPos)
         {
-            SendEvent(Events.PlaybackQueueEnded, new JSValueObject{ { "track", previous?.Id },
-                {"position", prevPos } });
+            module.PlaybackQueueEnded(new JSValueObject{ {"track", previous?.Id },
+                                                         {"position", prevPos } });
         }
 
         public void OnStateChange(PlaybackState state)
         {
-            Debug.WriteLine("OnStateChange");
-            JSValueObject jso = new JSValueObject { { "state", (int)state } };
-            SendEvent(Events.PlaybackState, jso);
+            module.PlaybackStateAction(new JSValueObject { { "state", (int)state } });
         }
 
         public void OnTrackUpdate(Track previous, double prevPos, Track next, bool changed)
         {
-            Debug.WriteLine("OnTrackUpdate");
-
             metadata.UpdateMetadata(next);
 
             if (changed)
             {
-                var jvo = new JSValueObject{{"track", previous?.Id},
-                    { "position", prevPos },
-                { "nextTrack", next?.Id} };
-                SendEvent(Events.PlaybackTrackChanged, jvo);
-
+                var jvo = new JSValueObject{{ "track", previous?.Id },
+                                            { "position", prevPos },
+                                            { "nextTrack", next?.Id } };
+                module.PlaybackTrackChanged(jvo);
             }
         }
 
         public void OnError(string code, string error)
         {
-            Debug.WriteLine("OnError: " + error);
-
-            JSValueObject jvo = new JSValueObject{{"code", code },
-                { "message", error } };
-            SendEvent(Events.PlaybackError, jvo);
+            JSValueObject jvo = new JSValueObject{{ "code", code },
+                                                  { "message", error } };
+            module.PlaybackError(jvo);
         }
 
         public void Dispose()
@@ -106,6 +93,5 @@ namespace TrackPlayer.Logic
 
             metadata.Dispose();
         }
-
     }
 }

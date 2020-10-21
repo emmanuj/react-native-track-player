@@ -10,13 +10,15 @@ namespace TrackPlayer.Logic
     public class Metadata
     {
         private MediaManager manager;
+        private TrackPlayerModule module;
         private SystemMediaTransportControls controls;
         private double jumpInterval = 15;
         private bool play, pause, stop, previous, next, jumpForward, jumpBackward, seek;
 
-        public Metadata(MediaManager manager)
+        public Metadata(MediaManager manager, TrackPlayerModule module)
         {
             this.manager = manager;
+            this.module = module;
         }
 
         public void SetTransportControls(SystemMediaTransportControls transportControls)
@@ -110,47 +112,40 @@ namespace TrackPlayer.Logic
             if (!seek) return;
 
             var jv = new JSValueObject {{ "position", args.RequestedPlaybackPosition.TotalSeconds }};
-            manager.SendEvent(Events.ButtonSeekTo, jv);
+            module.ButtonSeekTo(jv);
         }
 
         private void OnButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
         {
-            string eventType = null;
-            JSValueObject data = null;
-
             switch (args.Button)
             {
                 case SystemMediaTransportControlsButton.Play:
-                    eventType = Events.ButtonPlay;
+                    module.ButtonPlay(JSValue.Null);
                     break;
                 case SystemMediaTransportControlsButton.Pause:
-                    eventType = Events.ButtonPause;
+                    module.ButtonPause(JSValue.Null);
                     break;
                 case SystemMediaTransportControlsButton.Stop:
-                    eventType = Events.ButtonStop;
+                    module.ButtonStop(JSValue.Null);
                     break;
                 case SystemMediaTransportControlsButton.Previous:
-                    eventType = Events.ButtonSkipPrevious;
+                    module.ButtonSkipPrevious(JSValue.Null);
                     break;
                 case SystemMediaTransportControlsButton.Next:
-                    eventType = Events.ButtonSkipNext;
+                    module.ButtonSkipNext(JSValue.Null);
                     break;
                 case SystemMediaTransportControlsButton.FastForward:
-                    eventType = Events.ButtonJumpForward;
-                    data = new JSValueObject {{ "interval", jumpInterval }};
-
+                    var data = new JSValueObject {{ "interval", jumpInterval }};
+                    module.ButtonJumpForward(data);
                     break;
                 case SystemMediaTransportControlsButton.Rewind:
-                    eventType = Events.ButtonJumpBackward;
                     data = new JSValueObject { { "interval", jumpInterval } };
+                    module.ButtonJumpBackward(data);
                     break;
                 default:
                     return;
             }
-
-            manager.SendEvent(eventType, data);
         }
-
     }
 
     enum Capability {

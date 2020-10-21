@@ -10,7 +10,6 @@ namespace TrackPlayer.Logic
         public Uri Url { get; set; }
         public string Type { get; set; }
         public double Duration { get; set; }
-
         public string Title { get; set; }
         public string Artist { get; set; }
         public string Album { get; set; }

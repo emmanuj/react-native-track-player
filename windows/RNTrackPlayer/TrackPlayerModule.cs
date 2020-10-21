@@ -13,63 +13,75 @@ namespace TrackPlayer
 
         [ReactConstant]
         public int STATE_NONE = (int)PlaybackState.None;
+
         [ReactConstant]
         public int STATE_PLAYING = (int)PlaybackState.Playing;
+
         [ReactConstant]
         public int STATE_PAUSED = (int)PlaybackState.Paused;
+
         [ReactConstant]
         public int STATE_STOPPED = (int)PlaybackState.Stopped;
+
         [ReactConstant]
         public int STATE_BUFFERING = (int)PlaybackState.Buffering;
 
         // Capabilities
         [ReactConstant]
         public int CAPABILITY_PLAY = (int)Capability.Play;
+
         [ReactConstant]
         public int CAPABILITY_PLAY_FROM_ID = (int)Capability.Unsupported;
+
         [ReactConstant]
         public int CAPABILITY_PLAY_FROM_SEARCH = (int)Capability.Unsupported;
+
         [ReactConstant]
         public int CAPABILITY_PAUSE = (int)Capability.Pause;
+
         [ReactConstant]
         public int CAPABILITY_STOP = (int)Capability.Stop;
+
         [ReactConstant]
         public int CAPABILITY_SEEK_TO = (int)Capability.Seek;
+
         [ReactConstant]
         public int CAPABILITY_SKIP = (int)Capability.Unsupported;
+
         [ReactConstant]
         public int CAPABILITY_SKIP_TO_NEXT = (int)Capability.Next;
+
         [ReactConstant]
         public int CAPABILITY_SKIP_TO_PREVIOUS = (int)Capability.Previous;
+
         [ReactConstant]
         public int CAPABILITY_SET_RATING = (int)Capability.Unsupported;
+
         [ReactConstant]
         public int CAPABILITY_JUMP_FORWARD = (int)Capability.JumpForward;
+
         [ReactConstant]
         public int CAPABILITY_JUMP_BACKWARD = (int)Capability.JumpBackward;
-
 
         private MediaManager manager;
 
         public TrackPlayerModule()
         {
-            manager = new MediaManager();
+            manager = new MediaManager(this);
         }
-
 
         [ReactMethod]
         public void setupPlayer(JSValue options, ReactPromise<JSValue> promise)
         {
             JSValueObject x = JSValueObject.CopyFrom(options.AsObject());
-                //options.AsObject();
             if (manager.GetPlayer() != null)
             {
-                promise.Resolve(true);
+                promise.Resolve(JSValue.Null);
                 return;
             }
 
             manager.SwitchPlayback(manager.CreateLocalPlayback(x));
-            promise.Resolve(true);
+            promise.Resolve(JSValue.Null);
         }
 
         [ReactMethod]
@@ -159,11 +171,13 @@ namespace TrackPlayer
             player.RemoveUpcomingTracks();
             promise.Resolve(JSValue.Null);
         }
-        
+
         [ReactMethod]
-        public void add(JSValue iarray, string insertBeforeId, ReactPromise<JSValue> promise)
+        public void add(JSValue iarray, JSValue iInsertBeforeId, ReactPromise<JSValue> promise)
         {
-            try {
+            try
+            {
+                string insertBeforeId = iInsertBeforeId == JSValue.Null ? null : iInsertBeforeId.AsString();
                 JSValueArray array = JSValueArray.CopyFrom(iarray.AsArray());
                 var player = manager?.GetPlayer();
                 if (Utils.CheckPlayback(player, promise)) return;
@@ -176,13 +190,14 @@ namespace TrackPlayer
                 }
 
                 player.Add(tracks, insertBeforeId, promise);
-                promise.Resolve(true);
-                }
-            catch(Exception e) {
-                promise.Reject(new ReactError{Exception = e});
+                promise.Resolve(JSValue.Null);
+            }
+            catch (Exception e)
+            {
+                promise.Reject(new ReactError { Exception = e, Message = e.Message });
             }
         }
-        
+
         [ReactMethod]
         public void remove(JSValueArray array, ReactPromise<JSValue> promise)
         {
@@ -344,5 +359,41 @@ namespace TrackPlayer
 
             promise.Resolve(player.GetState().ToString());
         }
+
+        [ReactEvent("remote-play")]
+        public Action<JSValue> ButtonPlay { get; set; }
+
+        [ReactEvent("remote-pause")]
+        public Action<JSValue> ButtonPause { get; set; }
+
+        [ReactEvent("remote-stop")]
+        public Action<JSValue> ButtonStop { get; set; }
+
+        [ReactEvent("remote-next")]
+        public Action<JSValue> ButtonSkipNext { get; set; }
+
+        [ReactEvent("remote-previous")]
+        public Action<JSValue> ButtonSkipPrevious { get; set; }
+
+        [ReactEvent("remote-seek")]
+        public Action<JSValue> ButtonSeekTo { get; set; }
+
+        [ReactEvent("remote-jump-forward")]
+        public Action<JSValue> ButtonJumpForward { get; set; }
+
+        [ReactEvent("remote-jump-backward")]
+        public Action<JSValue> ButtonJumpBackward { get; set; }
+
+        [ReactEvent("playback-state")]
+        public Action<JSValue> PlaybackStateAction { get; set; }
+
+        [ReactEvent("playback-track-changed")]
+        public Action<JSValue> PlaybackTrackChanged { get; set; }
+
+        [ReactEvent("playback-queue-ended")]
+        public Action<JSValue> PlaybackQueueEnded { get; set; }
+
+        [ReactEvent("playback-error")]
+        public Action<JSValue> PlaybackError { get; set; }
     }
 }
