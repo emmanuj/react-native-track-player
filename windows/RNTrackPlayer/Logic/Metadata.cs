@@ -88,15 +88,20 @@ namespace TrackPlayer.Logic
         public void UpdateMetadata(Track track)
         {
             var display = controls.DisplayUpdater;
-            var properties = display.MusicProperties;
+            if (track != null) {
+                var properties = display.MusicProperties;
 
-            display.AppMediaId = track.Id;
-            display.Thumbnail = RandomAccessStreamReference.CreateFromUri(track.Artwork);
-            display.Type = MediaPlaybackType.Music;
+                display.AppMediaId = track.Id;
+                display.Thumbnail = RandomAccessStreamReference.CreateFromUri(track.Artwork);
+                display.Type = MediaPlaybackType.Music;
 
-            properties.Title = track.Title;
-            properties.Artist = track.Artist;
-            properties.AlbumTitle = track.Album;
+                properties.Title = track.Title;
+                properties.Artist = track.Artist;
+                properties.AlbumTitle = track.Album;
+            } else {
+                display.ClearAll();
+            }
+
         }
 
         public void Dispose()
