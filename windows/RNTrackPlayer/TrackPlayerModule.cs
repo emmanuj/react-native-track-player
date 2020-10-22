@@ -201,7 +201,7 @@ namespace TrackPlayer
         [ReactMethod]
         public void remove(JSValue array, ReactPromise<JSValue> promise)
         {
-            JSValueArray actualArray = array.AsArray();
+            var actualArray = array.AsArray();
             var player = manager?.GetPlayer();
             if (Utils.CheckPlayback(player, promise)) return;
 
