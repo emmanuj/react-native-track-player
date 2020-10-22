@@ -199,14 +199,15 @@ namespace TrackPlayer
         }
 
         [ReactMethod]
-        public void remove(JSValueArray array, ReactPromise<JSValue> promise)
+        public void remove(JSValue array, ReactPromise<JSValue> promise)
         {
+            JSValueArray actualArray = array.AsArray();
             var player = manager?.GetPlayer();
             if (Utils.CheckPlayback(player, promise)) return;
 
-            List<string> tracks = new List<string>(array.Count);
+            List<string> tracks = new List<string>(actualArray.Count);
 
-            foreach (string id in array)
+            foreach (string id in actualArray)
             {
                 tracks.Add(id);
             }
